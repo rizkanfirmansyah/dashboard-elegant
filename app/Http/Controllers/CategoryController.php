@@ -12,6 +12,13 @@ use Yajra\DataTables\DataTables;
 class CategoryController extends Controller
 {
     //
+    public function get_data()
+    {
+        $data = Category::all();
+
+        return response()->json(['message' => 'Get data has been successfully', 'data' => $data], 200);
+    }
+
     public function insert(Request $request)
     {
         $input = $request->all();
@@ -38,17 +45,17 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Request is Error', 'errors' => $th->getMessage()], 500);
         }
 
-        return response()->json(['message' => 'Input data has been successfully'], 200);
+        return response()->json(['message' => 'Input data has been successfully', 'data' => $result], 200);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $input = $request->all();
 
         DB::beginTransaction();
         try {
 
-            $result = Category::find($input['id']);
+            $result = Category::find($id);
 
             $result->update($input);
 
@@ -62,7 +69,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Request is Error', 'errors' => $th->getMessage()], 500);
         }
 
-        return response()->json(['message' => 'Update data has been successfully'], 200);
+        return response()->json(['message' => 'Update data has been successfully', 'data' => $result], 200);
     }
 
     public function delete($id)
@@ -84,7 +91,7 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Request is Error', 'errors' => $th->getMessage()], 500);
         }
 
-        return response()->json(['message' => 'Delete data has been successfully'], 200);
+        return response()->json(['message' => 'Delete data has been successfully', 'data' => $result], 200);
     }
 
     public function get()
@@ -105,6 +112,6 @@ class CategoryController extends Controller
     {
         $data = Category::find($id);
 
-        return response()->json(['message' => 'Get user has been successfully', 'data' => $data], 200);
+        return response()->json(['message' => 'Get category has been successfully', 'data' => $data], 200);
     }
 }

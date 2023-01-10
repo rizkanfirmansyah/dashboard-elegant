@@ -70,8 +70,96 @@
     <script src="/assets/extensions/jquery/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/v/bs5/dt-1.12.1/datatables.min.js"></script>
     {{-- <script src="/assets/js/pages/datatables.js"></script> --}}
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"
+        integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous">
+    </script>
 
     @stack('scripts')
 </body>
+
+<script>
+    var socket = io('http://127.0.0.1:8888');
+
+    // Ketika button tambah diklik
+    $('.add-client-btn').click(function() {
+        var clientId = $('#client-id').val();
+        var clientDescription = $('#client-description').val();
+
+        var clientClass = 'client-' + clientId;
+        var template = $('.client').first().clone()
+            .removeClass('hide')
+            .addClass(clientClass);
+
+        template.find('.title').html(clientId);
+        template.find('.description').html(clientDescription);
+        template.find('.logs').append($('<li>').text('Connecting...'));
+        $('.client-container').append(template);
+
+        socket.emit('create-session', {
+            id: clientId,
+            description: clientDescription
+        });
+    });
+
+    socket.on('message', function(data) {
+        console.log(data);
+        if (!data) {
+            console.log("Message not be broken");
+        }
+    })
+
+    socket.on('data', function(data) {
+        console.log(data);
+    })
+
+
+    socket.on('init', function(data) {
+        $('.client-container .client').not(':first').remove();
+        console.log(data);
+        for (var i = 0; i < data.length; i++) {
+            var session = data[i];
+
+            var clientId = session.id;
+            var clientDescription = session.description;
+
+            var clientClass = 'client-' + clientId;
+            var template = $('.client').first().clone()
+                .removeClass('hide')
+                .addClass(clientClass);
+
+            template.find('.title').html(clientId);
+            template.find('.description').html(clientDescription);
+            $('.client-container').append(template);
+
+            if (session.ready) {
+                $(`.client.${clientClass} .logs`).prepend($('<li>').text('Whatsapp is ready!'));
+            } else {
+                $(`.client.${clientClass} .logs`).prepend($('<li>').text('Connecting...'));
+            }
+        }
+    });
+
+    socket.on('remove-session', function(id) {
+        $(`.client.client-${id}`).remove();
+    });
+
+    socket.on('message', function(data) {
+        $(`.client.client-${data.id} .logs`).prepend($('<li>').text(data.text));
+    });
+
+    socket.on('qr', function(data) {
+        console.log(data);
+        $(`.client.client-${data.id} #qrcode`).attr('src', data.src);
+        $(`.client.client-${data.id} #qrcode`).show();
+    });
+
+    socket.on('ready', function(data) {
+        $(`.client.client-${data.id} #qrcode`).hide();
+    });
+
+    socket.on('authenticated', function(data) {
+        $(`.client.client-${data.id} #qrcode`).hide();
+    });
+</script>
 
 </html>

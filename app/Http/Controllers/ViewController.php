@@ -10,7 +10,8 @@ class ViewController extends Controller
 
     public function home()
     {
-        return view('home.index');
+        $title = 'hehe';
+        return view('home.index', compact('title'));
     }
     public function login()
     {
